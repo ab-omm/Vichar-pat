@@ -1,0 +1,1 @@
+Vichar Pat is an online reviewing board where one can add reviews and chaeck reviews for various things.
