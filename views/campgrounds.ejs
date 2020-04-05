@@ -1,0 +1,10 @@
+<%- include("partials/head") %>
+<h1>This is campground page</h1>
+<% campgrounds_list.forEach(campground => {%>
+    <div>
+        <h4><%= campground.name %> </h4>
+        <img src="<%= campground.image %>" alt="campsite">
+    </div>
+    
+<%})%>
+<%- include("partials/foot") %>
