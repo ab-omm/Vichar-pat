@@ -1,32 +1,54 @@
-var express = require('express');
-var app = express();
-var PORT = 3000;
-var bodyparser = require("body-parser");
+var express = require('express'),
+    app = express(), 
+    bodyparser = require("body-parser"),
+    mongoose = require("mongoose"),
+    passport = require("passport"),
+    LocalStrategy = require("passport-local"),
+    expressSession = require("express-session"),
+    methodOverride = require("method-override")
+const config = require('./config'),
+    PORT = config.app.port,
+    {db:{ user, password, dbname, protocol, host}} = config,
+    connectionString = `${protocol}://${user}:${password}@${host}`
+
+const Campground = require("./models/campground"),
+    Comment = require("./models/comment"),
+    User = require("./models/user")
+//useUnifiedTopology to use the server discovery and monitoring engine
+    mongoose.connect(connectionString
+    , {useNewUrlParser: true, useUnifiedTopology: true ,dbName: dbname}); 
+// authentication related code
+app.use(expressSession({
+    secret:"ashdekjjnfdkdsrkccnnskdljrithjjsdf",
+    resave: false,
+    saveUninitialized: false
+}))
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new LocalStrategy(User.authenticate()))//authenticate method is coming from passportLocalMongoose
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
+// to read urlencoded request body like key1=value1&key2=value2 we also have for json raw and other formats
 app.use(bodyparser.urlencoded({extended: true}));//this reads and parse form data
 app.set("view engine", "ejs");
-app.get("/", function(req, res){
-    res.render("home.ejs");
-});
+// adding a middleware to give user to every route
+app.use( (req, res, next) => {
+    res.locals.currentUser = req.user
+    next()
+})
+// method override to use put and delete http methods
+app.use(methodOverride("_method"))
+// =====================
+//       ROUTES
+// =====================
+const campgroundRoutes = require("./routes/campground"),
+    indexRoutes = require("./routes/index"),
+    commentRoutes = require("./routes/comment")
 
-app.get("/campgrounds", function(req, res){
-    var campgrounds = [
-        {name:"kili monjaro", image:"https://images.unsplash.com/photo-1530541930197-ff16ac917b0e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1050&q=80"},
-        {name:"Hutri durga", image:"https://images.unsplash.com/photo-1500581276021-a4bbcd0050c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=700&q=60"},
-        {name:"Kala pani", image:"https://images.unsplash.com/photo-1528892677828-8862216f3665?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=700&q=60"}
-    ];
-    res.render("campgrounds", {campgrounds_list: campgrounds});
-});
+app.use(indexRoutes)
+app.use("/campgrounds",campgroundRoutes)
+app.use("/campgrounds/:id/comments",commentRoutes)
 
-app.post("/campgrounds", function(req, res){
-    // get the data from form
-    var name = req.body.name;
-    var image = req.body.image;
-    // redirect to campground page
-});
-
-app.get("/campgrounds/new", function(req, res){
-    res.render("newCamp")
-});
 app.get("*", function(req, res){
     res.render("notFound")
 })

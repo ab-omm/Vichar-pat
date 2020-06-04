@@ -1,0 +1,14 @@
+<%- include("../partials/head") %>
+<h1>This is campground page</h1>
+<a href="campgrounds/new">Add new Campround</a>
+<% campgrounds_list.forEach(campground => {%>
+    <div>
+        <h4><%= campground.name %> </h4>
+        <img src="<%= campground.image %>" alt="campsite">
+        <p>
+            <a href="/campgrounds/<%= campground._id %>" class="btn btn-primary">More Info</a>
+        </p>
+    </div>
+    
+<%})%>
+<%- include("../partials/foot") %>

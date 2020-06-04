@@ -1,0 +1,7 @@
+<%- include("../partials/head") %>
+<h4>Add a comment for <%= camp.name %></h4>
+<form action= "/campgrounds/<%= camp._id %>/comments" method="POST">
+    <textarea name="comment" placeholder="Write a comment"></textarea>
+    <button type="submit">Submit</button>
+</form>
+<%- include("../partials/foot") %>
